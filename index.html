@@ -1,0 +1,387 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sơ đồ 3D SSI Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tiêu đề + tab, bên dưới là khung 3D (trái) và danh sách bước (phải); xếp dọc trên điện thoại. Màu: đỏ và xám, vàng chỉ dùng cho chỗ gửi xe. */
+:root{
+  --bg:#F1F1F2; --fg:#1E1F22; --muted:#656970; --line:#D9DADD; --card:#FFFFFF;
+  --brand:#C41E2E; --ra:#D62839; --rb:#3A3D42; --on-brand:#FFFFFF; --hl:#F2B705;
+  --canvas:#E4E5E7; --g-ground:#D8D9DC; --g-road:#9A9DA3; --g-park:#C6C8CB; --g-water:#AEB5BC;
+  --g-bld:#BDC0C5; --g-tall:#9DA1A7; --g-bsmt:#B0B3B8; --g-line:#F1F1F2;
+  --font:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151617; --fg:#ECECED; --muted:#A0A3A9; --line:#2E3033; --card:#1E1F21;
+    --brand:#FF5A5F; --ra:#FF4D57; --rb:#B8BCC2; --on-brand:#1A0A0B; --hl:#F5C242;
+    --canvas:#1A1B1D; --g-ground:#262729; --g-road:#4E5156; --g-park:#323437; --g-water:#3B4148;
+    --g-bld:#44474B; --g-tall:#55585D; --g-bsmt:#303236; --g-line:#151617; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151617; --fg:#ECECED; --muted:#A0A3A9; --line:#2E3033; --card:#1E1F21;
+  --brand:#FF5A5F; --ra:#FF4D57; --rb:#B8BCC2; --on-brand:#1A0A0B; --hl:#F5C242;
+  --canvas:#1A1B1D; --g-ground:#262729; --g-road:#4E5156; --g-park:#323437; --g-water:#3B4148;
+  --g-bld:#44474B; --g-tall:#55585D; --g-bsmt:#303236; --g-line:#151617; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;
+  padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-size:clamp(22px,4vw,30px);line-height:1.2;margin:0;font-weight:700;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{font:inherit;font-weight:500;font-size:14px;padding:9px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.tab:focus-visible,.chip:focus-visible,.step:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:clamp(340px,58vw,600px);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--canvas);touch-action:none}
+.stage canvas{display:block;width:100%;height:100%}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;left:0;top:0;white-space:nowrap;font-size:12px;font-weight:500;padding:2px 7px;border-radius:4px;background:color-mix(in srgb,var(--card) 90%,transparent);color:var(--fg);border:1px solid var(--line);will-change:transform}
+.lb.main{background:var(--brand);color:var(--on-brand);border-color:var(--brand);font-weight:700;font-size:13px}
+.lb.hl{background:var(--hl);color:#1E1F22;border-color:var(--hl);font-weight:700}
+.lb.road{background:none;border:none;color:var(--muted);font-style:italic;padding:0 2px;text-shadow:0 0 3px var(--canvas),0 0 3px var(--canvas)}
+.lb.road.major{font-style:normal;font-weight:700;color:var(--fg);font-size:13px}
+.pin{position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:500 12px var(--mono);color:#fff;border:2px solid var(--card);will-change:transform}
+.hint{position:absolute;left:10px;bottom:10px;font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--card) 90%,transparent);padding:3px 8px;border-radius:4px;border:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;font-size:13px;font-weight:500;padding:7px 12px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.chip i{width:10px;height:10px;border-radius:50%;display:block}
+.chip[aria-pressed="true"]{border-color:var(--fg)}
+.meta{margin:0;font:500 13px var(--mono);color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:10px 12px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.step[aria-current="true"]{border-color:var(--fg)}
+.num{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:500 12px var(--mono);color:#fff}
+.step b{display:block;font-weight:700;font-size:14px}
+.step span.d{display:block;color:var(--muted);font-size:13px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.nowebgl{padding:24px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Sơ đồ 3D SSI Home</h1>
+    <p class="sub">Số 1 Châu Văn Liêm, phường Từ Liêm, Hà Nội</p>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Chọn sơ đồ">
+    <button class="tab" role="tab" id="tab-duong-den" data-view="a" aria-selected="true">Đường đến SSI Home</button>
+    <button class="tab" role="tab" id="tab-check-in" data-view="b" aria-selected="false">Gửi xe và check-in</button>
+  </div>
+  <div class="layout">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="Sơ đồ 3D, kéo để xoay, cuộn để phóng to"></canvas>
+      <div id="labels"></div>
+      <div class="hint">Kéo để xoay · Cuộn hoặc chụm để phóng to</div>
+    </div>
+    <aside class="side">
+      <div class="chips" id="chips"></div>
+      <p class="meta" id="meta"></p>
+      <ol class="steps" id="steps"></ol>
+      <p class="note" id="note"></p>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+if(!window.THREE){document.getElementById('stage').innerHTML='<p class="nowebgl">Không tải được thư viện 3D. Hãy thử tải lại trang.</p>';return;}
+
+/* Tab B: đổi toạ độ ảnh sơ đồ (px) sang toạ độ cảnh 3D, 30 px = 1 đơn vị */
+function D(px,py){return [(px-260)/30,(py-205)/30];}
+
+/* ---------- Dữ liệu (toạ độ [x, z], tab A: 1 đơn vị ≈ 100 m, dựng từ ảnh chụp Google Maps) ---------- */
+var COMMON=[[-8,-11.5],[-5.1,-8.3],[-3.6,-8.3],[-2.9,-7.2],[-1.4,-6.4],[.5,-5],[2.06,-3.75]];
+var ROUTES={
+  a:{name:'Tuyến nhanh nhất · 7 phút',color:'--ra',meta:'Xe máy · 2,7 km · 7 phút (Google Maps)',
+    pts:COMMON.concat([[1.3,-2.5],[.3,-1],[-.5,0],[-.68,.55],[-.7,.9],[-.58,1.1],[-.45,.95],[-.45,.3],[-.45,-.2],[.1,-.22],[.55,-.2],[.62,.4]]),
+    steps:[
+      {t:'Xuất phát từ Sân vận động Quốc gia Mỹ Đình',d:'Số 1 Lê Đức Thọ. Đi ra phía khu Midomax Vietnam.',at:[-8,-11.5],off:[6,9,9]},
+      {t:'Đi theo đường Lê Quang Đạo',d:'Chạy dọc đường về phía đông nam, đến góc đường rẽ vào Châu Văn Liêm.',at:[-1.4,-6.4]},
+      {t:'Rẽ phải vào đường Châu Văn Liêm',d:'Rẽ phải ở góc đường, trước khi đến Bệnh viện Đa khoa Hồng Ngọc - Phúc Đạo.',at:[2.06,-3.75]},
+      {t:'Đi thẳng đường Châu Văn Liêm',d:'Bệnh viện Đa khoa Hồng Ngọc - Phúc Đạo bên phải, Công viên Mễ Trì bên trái.',at:[.3,-1]},
+      {t:'Quay đầu gần Đại lộ Thăng Long',d:'Quay đầu ở cuối đường Châu Văn Liêm, gần P. Phú Đô, rồi đi lại theo làn đối diện.',at:[-.6,1.05]},
+      {t:'Rẽ phải vào đường nội khu Mỹ Đình Pearl',d:'Rẽ phải luôn sau khi quay đầu, đi khoảng 210 m. Điểm đến: 1 Đường Châu Văn Liêm.',at:[.55,.2]}
+    ]},
+  b:{name:'Tuyến thay thế · 8 phút',color:'--rb',meta:'Xe máy · 8 phút (Google Maps)',
+    pts:COMMON.concat([[3.1,-3.1],[4,-2.4],[4.1,-1],[4.1,.6],[3.8,1],[2.4,1.03],[1.2,1],[.62,.9],[.62,.4]]),
+    steps:[
+      {t:'Xuất phát từ Sân vận động Quốc gia Mỹ Đình',d:'Số 1 Lê Đức Thọ. Đi ra phía khu Midomax Vietnam.',at:[-8,-11.5],off:[6,9,9]},
+      {t:'Đi theo đường Lê Quang Đạo',d:'Chạy dọc đường về phía đông nam.',at:[-1.4,-6.4]},
+      {t:'Đi tiếp qua góc đường rẽ vào Châu Văn Liêm',d:'Không rẽ vào Châu Văn Liêm, tiếp tục theo Lê Quang Đạo.',at:[2.06,-3.75]},
+      {t:'Rẽ phải vào đường Bạch Thành Phong',d:'Đi xuống phía Đại lộ Thăng Long. Google Maps ghi nhận đoạn đông ở cuối đường.',at:[4.1,-.8]},
+      {t:'Đi theo đường gom Đại lộ Thăng Long',d:'Quay về hướng Mỹ Đình Pearl.',at:[2.4,1.03]},
+      {t:'Đến Mỹ Đình Pearl',d:'1 Đường Châu Văn Liêm, gần toà Pearl Tower.',at:[.62,.4]}
+    ]}
+};
+
+/* Tab B: lộ trình từ mặt đường vào hầm B1 rồi đến sảnh tầng 1 (px theo sơ đồ mô phỏng) */
+var CHECKIN={
+  meta:'Sơ đồ mô phỏng · không theo tỷ lệ',
+  pts:[[450,398],[450,300],[450,170],[444,150],[420,149],[330,149],[312,152],[302,172],[298,196],[288,204],[240,204],[228,214],[228,278],[228,316],[210,319],[192,322],[190,336],[190,350],[150,353],[128,351]],
+  steps:[
+    {t:'Rẽ vào đường nội bộ khu Mỹ Đình Pearl',d:'Từ đường Châu Văn Liêm, rẽ vào đường nội bộ chạy vuông góc ở bên phải sơ đồ.',at:D(450,372)},
+    {t:'Rẽ trái vào hầm B1',d:'Đi thẳng đến lối vào hầm B1 rồi rẽ trái để vào hầm.',at:D(440,150)},
+    {t:'Gửi xe ở khu vực tô vàng',d:'Trong hầm, đi theo chiều mũi tên và để xe tại chỗ gửi xe đối diện cầu thang ngoài trời.',at:D(228,186),y:.45},
+    {t:'Đi lên cầu thang ngoài trời',d:'Từ chỗ gửi xe, đi đến cầu thang ngoài trời ngay đối diện và đi lên.',at:D(228,254)},
+    {t:'Rẽ phải vào Shin Coffee',d:'Lên hết cầu thang, rẽ phải đến quán Shin Coffee, ngay cạnh toà SSI Home.',at:D(212,321)},
+    {t:'Vào sảnh tầng 1 để check-in',d:'Từ Shin Coffee, đi vào cổng chính của toà văn phòng 19 tầng (SSI Home). Khu vực check-in nằm ở sảnh tầng 1.',at:D(128,351)}
+  ]
+};
+
+var L=function(v,n,pxy,h,cls){var d=D(pxy[0],pxy[1]);return {v:v,n:n,p:[d[0],h,d[1]],cls:cls};};
+var LABELS=[
+  {v:'a',n:'SSI Home',p:[.15,2.1,.45],cls:'main'},
+  {v:'a',n:'Sân vận động Quốc gia Mỹ Đình',p:[-8,.8,-11.5]},
+  {v:'a',n:'Midomax Vietnam',p:[-3.5,.5,-7.9]},
+  {v:'a',n:'The Manor',p:[4.1,1.4,-7]},
+  {v:'a',n:'Bệnh viện Hồng Ngọc - Phúc Đạo',p:[-.1,1,-2.2]},
+  {v:'a',n:'Windy Garden',p:[.35,.6,-3.1]},
+  {v:'a',n:'Công viên Mễ Trì',p:[2.9,.3,-1.4]},
+  {v:'a',n:'Cà phê 1989 Mỹ Đình',p:[-2.8,.3,-1.5]},
+  {v:'a',n:'ToCoToCo Phú Đô',p:[-2.1,.5,.3]},
+  {v:'a',n:'Trạm xăng dầu 49',p:[-.6,.6,5.1]},
+  {v:'a',n:'Mỹ Đình Pearl',p:[1.2,1.7,-.7]},
+  {v:'a',n:'Đường Lê Quang Đạo',p:[-2.6,.15,-7.4],cls:'road'},
+  {v:'a',n:'Đường Châu Văn Liêm',p:[.55,.15,-1.7],cls:'road'},
+  {v:'a',n:'Đại lộ Thăng Long',p:[4.5,.15,1.9],cls:'road major'},
+  {v:'a',n:'Đại lộ Thăng Long',p:[-3.2,.15,1.7],cls:'road major'},
+  {v:'a',n:'P. Phú Đô',p:[-1.1,.15,-1.6],cls:'road'},
+  {v:'a',n:'Bạch Thành Phong',p:[4.5,.15,-.4],cls:'road'},
+  L('b','SSI Home, toà văn phòng 19 tầng',[118,333],4.2,'main'),
+  L('b','Cổng chính vào sảnh tầng 1',[128,352],.75),
+  L('b','Toà Mỹ Đình Pearl 1 (38 tầng)',[36,259],6.2),
+  L('b','Toà dân cư',[263,54],2.9),
+  L('b','Hầm gửi xe B1',[190,120],.45),
+  L('b','Chỗ gửi xe đối diện cầu thang',[130,180],.4,'hl'),
+  L('b','Rẽ trái (lối vào hầm B1)',[375,149],.3),
+  L('b','Lối đi vào',[120,203],.1,'road'),
+  L('b','Lối đi ra',[350,306],.1,'road'),
+  L('b','Cầu thang ngoài trời',[110,255],.5),
+  L('b','Shin Coffee',[233,337],.75),
+  L('b','Đường nội bộ khu Mỹ Đình Pearl',[450,250],.1,'road'),
+  L('b','Đường Châu Văn Liêm',[250,389],.1,'road')
+];
+
+/* ---------- Cảnh 3D ---------- */
+var stage=document.getElementById('stage'),cv=document.getElementById('cv'),labelsEl=document.getElementById('labels');
+var renderer;
+try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});}catch(e){stage.innerHTML='<p class="nowebgl">Trình duyệt này không hiển thị được 3D.</p>';return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(42,1,.2,200);
+var controls=new THREE.OrbitControls(camera,cv);
+controls.enableDamping=true;controls.dampingFactor=.08;controls.maxPolarAngle=1.45;controls.minDistance=1.5;controls.maxDistance=40;
+scene.add(new THREE.AmbientLight(0xffffff,.78));
+var sun=new THREE.DirectionalLight(0xffffff,.6);sun.position.set(-6,14,8);scene.add(sun);
+
+function mat(key,extra){var m=new THREE.MeshLambertMaterial(Object.assign({side:THREE.DoubleSide},extra||{}));m.userData.key=key;return m;}
+var M={ground:mat('--g-ground'),road:mat('--g-road'),park:mat('--g-park'),water:mat('--g-water'),
+  bld:mat('--g-bld'),tall:mat('--g-tall'),brand:mat('--brand'),ra:mat('--ra'),rb:mat('--rb'),
+  line:mat('--g-line'),bsmt:mat('--g-bsmt'),hl:mat('--hl')};
+function css(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim();}
+function applyTheme(){
+  Object.keys(M).forEach(function(k){M[k].color.set(css(M[k].userData.key));});
+  scene.background=new THREE.Color(css('--canvas'));
+  document.querySelectorAll('.pin,.num,.chip i').forEach(function(p){if(p.dataset.c)p.style.background=css(p.dataset.c);});
+}
+function box(w,h,d,x,y,z,m,g){var o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);(g||scene).add(o);return o;}
+function V(a){return new THREE.Vector3(a[0],0,a[1]);}
+function ribbon(pts,width,y,m,g){
+  var curve=new THREE.CatmullRomCurve3(pts.map(V)),n=Math.max(60,pts.length*30),pos=[],idx=[],up=new THREE.Vector3(0,1,0);
+  for(var i=0;i<=n;i++){var t=i/n,p=curve.getPoint(t),tg=curve.getTangent(t),s=new THREE.Vector3().crossVectors(tg,up).normalize().multiplyScalar(width/2);
+    pos.push(p.x-s.x,y,p.z-s.z,p.x+s.x,y,p.z+s.z);if(i<n){var a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}}
+  var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();
+  (g||scene).add(new THREE.Mesh(geo,m));return curve;
+}
+function poly(pts,y,m,g){
+  var sh=new THREE.Shape();pts.forEach(function(p,i){if(i)sh.lineTo(p[0],-p[1]);else sh.moveTo(p[0],-p[1]);});
+  var o=new THREE.Mesh(new THREE.ShapeGeometry(sh),m);o.rotation.x=-Math.PI/2;o.position.y=y;(g||scene).add(o);return o;
+}
+
+/* --- View A: tuyến đường từ Sân vận động Mỹ Đình đến Mỹ Đình Pearl --- */
+var gA=new THREE.Group();scene.add(gA);
+var gnd=new THREE.Mesh(new THREE.PlaneGeometry(26,24),M.ground);gnd.rotation.x=-Math.PI/2;gnd.position.set(-1,-.03,-3.2);gA.add(gnd);
+poly([[1.9,-3.3],[3.95,-2.6],[3.95,.7],[1.0,.7],[.9,-.5],[1.2,-1.8]],.012,M.park,gA);
+poly([[-9.6,-12.8],[-6.4,-12.8],[-6.4,-10.2],[-9.6,-10.2]],.012,M.park,gA);
+var pond=new THREE.Mesh(new THREE.CircleGeometry(.42,28),M.water);pond.rotation.x=-Math.PI/2;pond.position.set(-2.8,.02,-1.5);gA.add(pond);
+ribbon([[-10,1.7],[-5,1.55],[0,1.5],[5,1.45],[10,1.4]],.8,.0,M.road,gA);
+ribbon([[.62,1.02],[4,1.04]],.16,.006,M.road,gA);
+ribbon(COMMON.concat([[3.1,-3.1],[4.2,-2.5],[6.5,-1.6],[9,-.8]]),.32,.004,M.road,gA);
+ribbon([[2.06,-3.75],[1.3,-2.5],[.3,-1],[-.5,0],[-.65,.6],[-.6,1.5]],.32,.005,M.road,gA);
+ribbon([[4.1,-2.6],[4.1,-1],[4.1,.6],[4.05,4]],.3,.005,M.road,gA);
+ribbon([[-.8,1.1],[-1.05,-.5],[-.85,-2.5],[-.4,-4.2]],.16,.004,M.road,gA);
+box(.42,1.5,.42,.15,.75,.45,M.brand,gA);
+box(.45,1.2,.45,.9,.6,-.95,M.tall,gA);
+box(.5,1,.5,1.6,.5,-.35,M.bld,gA);
+box(.75,.55,.8,-.05,.28,-2.2,M.bld,gA);
+box(.3,.35,.3,.35,.18,-3.1,M.bld,gA);
+box(.4,.3,.4,-3.5,.15,-7.9,M.bld,gA);
+box(.9,1.1,.9,4.1,.55,-7,M.tall,gA);
+box(.4,.3,.4,-2.1,.15,.3,M.bld,gA);
+box(.4,.25,.4,-.6,.12,5.1,M.bld,gA);
+var stad=new THREE.Mesh(new THREE.CylinderGeometry(.95,1.1,.4,40),M.bld);stad.position.set(-8,.2,-11.5);gA.add(stad);
+
+var routeObjs={};
+Object.keys(ROUTES).forEach(function(k){
+  var r=ROUTES[k],g=new THREE.Group(),m=M[k==='a'?'ra':'rb'];gA.add(g);
+  var curve=ribbon(r.pts,.14,.05,m,g);
+  var ball=new THREE.Mesh(new THREE.SphereGeometry(.14,20,16),m);g.add(ball);
+  var end=r.pts[r.pts.length-1],flag=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.7,10),M.brand);flag.position.set(end[0],.35,end[1]);g.add(flag);
+  routeObjs[k]={g:g,curve:curve,ball:ball,y:.2};
+});
+
+/* --- View B: dựng theo sơ đồ mô phỏng từ mặt đường vào hầm B1 và sảnh tầng 1 --- */
+var gB=new THREE.Group();scene.add(gB);
+function rb(x1,y1,x2,y2,h,m,y0){
+  var a=D(x1,y1),b=D(x2,y2),base=y0||0;
+  return box(b[0]-a[0],h,b[1]-a[1],(a[0]+b[0])/2,base+h/2,(a[1]+b[1])/2,m,gB);
+}
+function arrow(cx,cy,dir,m){
+  var p=function(x,y){return D(x,y);};
+  var tip=p(cx+dir*11,cy),b1=p(cx-dir*9,cy-8),b2=p(cx-dir*9,cy+8);
+  poly([tip,b1,b2],.04,m,gB);
+}
+rb(10,10,510,410,.04,M.ground,-.04);
+rb(437,110,464,375,.02,M.road);
+rb(26,375,502,402,.02,M.road);
+rb(52,193,437,213,.02,M.road);
+rb(52,297,437,315,.02,M.road);
+rb(74,86,311,193,.03,M.bsmt);
+rb(80,168,311,190,.05,M.hl);
+rb(312,140,437,158,.04,M.bld);
+arrow(300,203,-1,M.rb);arrow(140,203,-1,M.rb);
+arrow(135,306,1,M.rb);arrow(308,306,1,M.rb);
+rb(65,233,263,277,.14,M.bld);
+for(var sx=72;sx<=258;sx+=9){rb(sx,233,sx+2,277,.006,M.line,.14);}
+for(var cr=0;cr<3;cr++)for(var ci=0;ci<8;ci++){
+  if((ci+cr*3)%4===0)continue;
+  var cp=D(92+ci*28,106+cr*23);
+  box(.3,.15,.5,cp[0],.1,cp[1],M.tall,gB);
+}
+rb(68,38,458,70,2.6,M.tall);
+rb(22,196,50,322,5.8,M.tall);
+rb(53,321,183,346,3.8,M.brand);
+for(var f=1;f<19;f++){rb(52.5,320.5,183.5,346.5,.02,M.line,f*3.8/19);}
+rb(196,328,270,343,.55,M.bld);
+rb(105,345.5,150,347.5,.5,M.line);
+
+var routeB=(function(){
+  var pts=CHECKIN.pts.map(function(a){return D(a[0],a[1]);});
+  var curve=ribbon(pts,.14,.3,M.ra,gB);
+  var ball=new THREE.Mesh(new THREE.SphereGeometry(.14,20,16),M.ra);gB.add(ball);
+  var end=pts[pts.length-1],flag=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.9,10),M.ra);flag.position.set(end[0],.45,end[1]);gB.add(flag);
+  return {curve:curve,ball:ball,y:.45};
+})();
+
+/* ---------- Nhãn và ghim ---------- */
+var labelEls=[],pinEls=[];
+LABELS.forEach(function(l){
+  var el=document.createElement('div');el.className='lb'+(l.cls?' '+l.cls:'');el.textContent=l.n;labelsEl.appendChild(el);
+  labelEls.push({el:el,v:new THREE.Vector3(l.p[0],l.p[1],l.p[2]),view:l.v});
+});
+function clearPins(){pinEls.forEach(function(p){p.el.remove();});pinEls=[];}
+function addPin(n,vec,colorVar){
+  var el=document.createElement('div');el.className='pin';el.textContent=n;el.dataset.c=colorVar;el.style.background=css(colorVar);labelsEl.appendChild(el);
+  pinEls.push({el:el,v:vec});
+}
+var tmp=new THREE.Vector3();
+function project(){
+  var w=stage.clientWidth,h=stage.clientHeight;
+  function place(o,show,dy){
+    if(!show){o.el.style.display='none';return;}
+    tmp.copy(o.v).project(camera);
+    if(tmp.z>1||tmp.z<-1){o.el.style.display='none';return;}
+    o.el.style.display='';
+    var x=(tmp.x*.5+.5)*w,y=(-tmp.y*.5+.5)*h;
+    o.el.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) translate(-50%,'+dy+')';
+  }
+  labelEls.forEach(function(o){place(o,o.view===view,'-110%');});
+  pinEls.forEach(function(o){place(o,true,'-50%');});
+}
+
+/* ---------- Trạng thái, bước, camera ---------- */
+var view='a',route='a',active=0,fly=null;
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var stepsEl=document.getElementById('steps'),chipsEl=document.getElementById('chips'),noteEl=document.getElementById('note'),metaEl=document.getElementById('meta');
+
+function flyTo(p,t){if(reduce){camera.position.set(p[0],p[1],p[2]);controls.target.set(t[0],t[1],t[2]);return;}fly={p:new THREE.Vector3(p[0],p[1],p[2]),t:new THREE.Vector3(t[0],t[1],t[2])};}
+controls.addEventListener('start',function(){fly=null;});
+
+function curSteps(){return view==='a'?ROUTES[route].steps:CHECKIN.steps;}
+function renderSteps(){
+  var data=curSteps(),colorVar=view==='a'?ROUTES[route].color:'--ra';
+  stepsEl.innerHTML='';clearPins();
+  data.forEach(function(s,i){
+    var li=document.createElement('li'),b=document.createElement('button');
+    b.className='step';b.type='button';if(i===active)b.setAttribute('aria-current','true');
+    b.innerHTML='<span class="num" data-c="'+colorVar+'">'+(i+1)+'</span><span><b></b><span class="d"></span></span>';
+    b.querySelector('b').textContent=s.t;b.querySelector('.d').textContent=s.d;
+    b.addEventListener('click',function(){goStep(i);});
+    li.appendChild(b);stepsEl.appendChild(li);
+    addPin(i+1,new THREE.Vector3(s.at[0],s.y||.7,s.at[1]),colorVar);
+  });
+  applyTheme();
+}
+function goStep(i){
+  active=i;
+  var s=curSteps()[i],o=s.off||(view==='a'?[2.5,3.8,4.6]:[1.6,3.4,4.2]);
+  flyTo([s.at[0]+o[0],o[1],s.at[1]+o[2]],[s.at[0],0,s.at[1]]);
+  renderSteps();
+}
+function renderChips(){
+  chipsEl.innerHTML='';
+  if(view!=='a')return;
+  Object.keys(ROUTES).forEach(function(k){
+    var b=document.createElement('button');b.type='button';b.className='chip';b.setAttribute('aria-pressed',k===route?'true':'false');
+    b.innerHTML='<i data-c="'+ROUTES[k].color+'"></i><span></span>';b.querySelector('span').textContent=ROUTES[k].name;
+    b.addEventListener('click',function(){route=k;active=0;showRoutes();renderChips();renderSteps();overview();setMeta();});
+    chipsEl.appendChild(b);
+  });
+}
+function setMeta(){metaEl.textContent=view==='a'?ROUTES[route].meta:CHECKIN.meta;}
+function showRoutes(){Object.keys(routeObjs).forEach(function(k){routeObjs[k].g.visible=(view==='a'&&k===route);});}
+function overview(){if(view==='a')flyTo([-1,19,12],[-1,0,-4]);else flyTo([.5,13,11.5],[.3,0,.8]);}
+
+function setView(v,skipHash){
+  view=v;active=0;gA.visible=v==='a';gB.visible=v==='b';
+  document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',t.dataset.view===v?'true':'false');});
+  if(v==='a'){noteEl.textContent='Dựng lại từ ảnh chụp lộ trình Google Maps (đi xe máy). Vị trí các mốc mang tính tương đối. Hãy kiểm tra lại trên Google Maps trước khi đi.';}
+  else{noteEl.textContent='Dựng lại từ sơ đồ mô phỏng của ban tổ chức, không theo đúng tỷ lệ. Khi ra về, xe đi theo lối đi ra ở phía dưới sơ đồ, mũi tên hướng về đường nội bộ.';}
+  showRoutes();renderChips();renderSteps();overview();setMeta();
+  if(!skipHash){try{history.replaceState(null,'',v==='a'?'#duong-den':'#check-in');}catch(e){}}
+}
+document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){setView(t.dataset.view);});});
+function fromHash(){setView(location.hash==='#check-in'?'b':'a',true);}
+window.addEventListener('hashchange',fromHash);
+
+/* ---------- Vòng lặp ---------- */
+function resize(){var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);else window.addEventListener('resize',resize);
+var t0=performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  if(fly){camera.position.lerp(fly.p,.07);controls.target.lerp(fly.t,.07);if(camera.position.distanceTo(fly.p)<.05)fly=null;}
+  var ro=view==='a'?routeObjs[route]:routeB,u=reduce?1:(((now-t0)/1000)*(view==='a'?.045:.06))%1;
+  ro.ball.position.copy(ro.curve.getPoint(u));ro.ball.position.y=ro.y;
+  controls.update();renderer.render(scene,camera);project();
+}
+applyTheme();
+var mq=window.matchMedia('(prefers-color-scheme: dark)');
+if(mq.addEventListener)mq.addEventListener('change',applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+resize();camera.position.set(-1,19,12);controls.target.set(-1,0,-4);
+fromHash();resize();requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
